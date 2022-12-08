@@ -57,15 +57,7 @@ func main() {
 	// Generate service file
 	var serviceTemplate = template.Must(template.New("service").Parse(serviceTemplate))
 
-	outFile := inpFile + ".service"
-
-	out, err := os.Create(outFile)
-
-	if err != nil {
-		panic(err)
-	}
-
-	err = serviceTemplate.Execute(out, tmpl)
+	err = serviceTemplate.Execute(os.Stdout, tmpl)
 
 	if err != nil {
 		panic(err)
