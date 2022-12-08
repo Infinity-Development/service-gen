@@ -98,6 +98,10 @@ func main() {
 	// Output file is removal of suffix and addition of .service
 	outFile := strings.TrimSuffix(inpFile, ".yaml") + ".service"
 
+	if os.Getenv("OUTPUT_DIR") != "" {
+		outFile = os.Getenv("OUTPUT_DIR") + "/" + outFile
+	}
+
 	// Create output file
 	out, err := os.Create(outFile)
 
