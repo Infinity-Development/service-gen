@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"fmt"
 	"os"
+	"strings"
 
 	"text/template"
 
@@ -16,6 +17,7 @@ type TemplateYaml struct {
 	Directory   string `yaml:"dir" validate:"required"`         // WorkingDirectory in systemd
 	Target      string `yaml:"target" validate:"required"`      // PartOf in systemd
 	Description string `yaml:"description" validate:"required"` // Description in systemd
+	After       string `yaml:"after" validate:"required"`       // After in systemd
 }
 
 //go:embed service.tmpl
@@ -52,6 +54,14 @@ func main() {
 
 	if err != nil {
 		panic(err)
+	}
+
+	if strings.Contains(tmpl.Target, ".") {
+		panic("Target cannot contain a period (.)")
+	}
+
+	if strings.Contains(tmpl.After, ".") {
+		panic("Target cannot contain a period (.)")
 	}
 
 	// Generate service file
