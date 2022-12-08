@@ -95,7 +95,25 @@ func main() {
 	// Generate service file
 	var serviceTemplate = template.Must(template.New("service").Parse(serviceTemplate))
 
-	err = serviceTemplate.Execute(os.Stdout, tmpl)
+	// Output file is removal of suffix and addition of .service
+	outFile := strings.TrimSuffix(inpFile, ".yaml") + ".service"
+
+	// Create output file
+	out, err := os.Create(outFile)
+
+	if err != nil {
+		panic(err)
+	}
+
+	err = serviceTemplate.Execute(out, tmpl)
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Generated " + outFile)
+
+	err = out.Close()
 
 	if err != nil {
 		panic(err)
