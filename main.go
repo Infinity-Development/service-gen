@@ -29,6 +29,34 @@ func main() {
 		os.Exit(1)
 	}
 
+	if os.Args[1] == "all" {
+		dirName := os.Getenv("SERVICE_DIR")
+
+		if dirName == "" {
+			panic("SERVICE_DIR env var not set")
+		}
+
+		// Get dir listing of SERVICE_DIR
+
+		dir, err := os.ReadDir(dirName)
+
+		if err != nil {
+			panic(err)
+		}
+
+		for _, file := range dir {
+			if !file.IsDir() {
+				// Generate service file
+				fmt.Println("Generating service for " + file.Name())
+				os.Args[1] = dirName + "/" + file.Name()
+
+				main()
+			}
+		}
+
+		os.Exit(0)
+	}
+
 	inpFile := os.Args[1]
 
 	// Read input file
