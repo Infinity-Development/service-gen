@@ -135,7 +135,7 @@ func main() {
 			}
 		}
 
-		os.Exit(0)
+		return
 	}
 
 	// Parse input file
