@@ -19,6 +19,7 @@ type TemplateYaml struct {
 	Target      string `yaml:"target" validate:"required"`      // PartOf in systemd
 	Description string `yaml:"description" validate:"required"` // Description in systemd
 	After       string `yaml:"after" validate:"required"`       // After in systemd
+	Broken      bool   `yaml"broken"`                           // Does the service even work?
 }
 
 // Defines metadata which is _meta.yaml
@@ -179,6 +180,11 @@ func gen(inpFile string) {
 
 	if err != nil {
 		panic(err)
+	}
+
+	if tmpl.Broken {
+		fmt.Println("Ignoring broken service:", inpFile)
+		return
 	}
 
 	// Validate input file
