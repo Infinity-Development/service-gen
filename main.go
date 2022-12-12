@@ -32,11 +32,15 @@ type MetaTarget struct {
 	Description string `yaml:"description" validate:"required"` // Directory to place target file
 }
 
-//go:embed service.tmpl
-var serviceTemplate string
+var (
+	//go:embed service.tmpl
+	serviceTemplate string
 
-//go:embed target.tmpl
-var targetTemplate string
+	//go:embed target.tmpl
+	targetTemplate string
+
+	targetNames []string
+)
 
 func main() {
 	if len(os.Args) < 2 {
@@ -104,6 +108,8 @@ func main() {
 
 		// Generate target files
 		for _, target := range meta.Targets {
+			targetNames = append(targetNames, target.Name)
+
 			var targetTemplate = template.Must(template.New("target").Parse(targetTemplate))
 
 			// Output file is removal of suffix and addition of .target
