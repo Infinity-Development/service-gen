@@ -134,6 +134,8 @@ func main() {
 				panic(err)
 			}
 		}
+
+		os.Exit(0)
 	}
 
 	// Parse input file
