@@ -82,6 +82,29 @@ func gen(inpFile string) {
 		panic(err)
 	}
 
+	if strings.HasSuffix(inpFile, ".service") {
+		var outFile = inpFile
+		// This is a service file, copy to OUTPUT_DIRECTORY directly
+		if os.Getenv("OUTPUT_DIR") != "" {
+			outFile = os.Getenv("OUTPUT_DIR") + "/" + outFile
+		}
+
+		// Create output file
+		out, err := os.Create(outFile)
+
+		if err != nil {
+			panic(err)
+		}
+
+		_, err = out.Write(inp)
+
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println("Copied "+inpFile, "to", outFile, "(already service)")
+	}
+
 	// Handle _meta.yaml
 	if strings.HasSuffix(inpFile, "_meta.yaml") {
 		fmt.Println("Creating metadata for services")
