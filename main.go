@@ -44,40 +44,37 @@ var (
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("Usage: ./service-gen <input file>")
+		fmt.Println("Usage: ./service-gen <input folder>")
 		os.Exit(1)
 	}
 
-	if os.Args[1] == "all" {
-		dirName := os.Getenv("SERVICE_DIR")
+	dirName := os.Args[1]
 
-		if dirName == "" {
-			panic("SERVICE_DIR env var not set")
-		}
-
-		// Get dir listing of SERVICE_DIR
-
-		dir, err := os.ReadDir(dirName)
-
-		if err != nil {
-			panic(err)
-		}
-
-		for _, file := range dir {
-			if !file.IsDir() {
-				// Generate service file by setting the argument and calling main
-				fmt.Println("Generating service for " + file.Name())
-				os.Args[1] = dirName + "/" + file.Name()
-
-				main()
-			}
-		}
-
-		os.Exit(0)
+	if dirName == "" {
+		fmt.Println("Usage: ./service-gen <input folder>")
+		os.Exit(1)
 	}
 
-	inpFile := os.Args[1]
+	// Get dir listing of SERVICE_DIR
 
+	dir, err := os.ReadDir(dirName)
+
+	if err != nil {
+		panic(err)
+	}
+
+	for _, file := range dir {
+		if !file.IsDir() {
+			// Generate service file by setting the argument and calling main
+			fmt.Println("Generating service for " + file.Name())
+			gen(dirName + "/" + file.Name())
+		}
+	}
+
+	os.Exit(0)
+}
+
+func gen(inpFile string) {
 	// Read input file
 	inp, err := os.ReadFile(inpFile)
 
