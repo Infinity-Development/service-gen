@@ -19,7 +19,7 @@ type TemplateYaml struct {
 	Target      string `yaml:"target" validate:"required"`      // PartOf in systemd
 	Description string `yaml:"description" validate:"required"` // Description in systemd
 	After       string `yaml:"after" validate:"required"`       // After in systemd
-	Broken      bool   `yaml"broken"`                           // Does the service even work?
+	Broken      bool   `yaml:"broken"`                          // Does the service even work?
 }
 
 // Defines metadata which is _meta.yaml
