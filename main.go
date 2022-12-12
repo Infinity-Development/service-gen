@@ -103,6 +103,14 @@ func gen(inpFile string) {
 		}
 
 		fmt.Println("Copied "+inpFile, "to", outFile, "(already service)")
+
+		err = out.Close()
+
+		if err != nil {
+			panic(err)
+		}
+
+		return
 	}
 
 	// Handle _meta.yaml
