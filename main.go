@@ -9,6 +9,7 @@ import (
 	"text/template"
 
 	"github.com/go-playground/validator/v10"
+	"golang.org/x/exp/slices"
 	"gopkg.in/yaml.v3"
 )
 
@@ -56,8 +57,68 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Get dir listing of SERVICE_DIR
+	// Read meta file
+	fmt.Println("Creating metadata for services")
 
+	inp, err := os.ReadFile(dirName + "/_meta.yaml")
+
+	if err != nil {
+		panic(err)
+	}
+
+	var meta MetaYAML
+
+	err = yaml.Unmarshal(inp, &meta)
+
+	if err != nil {
+		panic(err)
+	}
+
+	// Validate input file
+	validator := validator.New()
+
+	err = validator.Struct(meta)
+
+	if err != nil {
+		panic(err)
+	}
+
+	// Generate target files
+	for _, target := range meta.Targets {
+		targetNames = append(targetNames, target.Name)
+
+		var targetTemplate = template.Must(template.New("target").Parse(targetTemplate))
+
+		// Output file is removal of suffix and addition of .target
+		outFile := target.Name + ".target"
+
+		if os.Getenv("OUTPUT_DIR") != "" {
+			outFile = os.Getenv("OUTPUT_DIR") + "/" + outFile
+		}
+
+		// Create output file
+		out, err := os.Create(outFile)
+
+		if err != nil {
+			panic(err)
+		}
+
+		err = targetTemplate.Execute(out, target)
+
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println("Generated " + outFile)
+
+		err = out.Close()
+
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	// Get dir listing of SERVICE_DIR
 	dir, err := os.ReadDir(dirName)
 
 	if err != nil {
@@ -66,7 +127,11 @@ func main() {
 
 	for _, file := range dir {
 		if !file.IsDir() {
-			// Generate service file by setting the argument and calling main
+			if file.Name() == "_meta.yaml" {
+				continue
+			}
+
+			// Generate service file by calling gen()
 			fmt.Println("Generating service for " + file.Name())
 			gen(dirName + "/" + file.Name())
 		}
@@ -114,65 +179,6 @@ func gen(inpFile string) {
 		return
 	}
 
-	// Handle _meta.yaml
-	if strings.HasSuffix(inpFile, "_meta.yaml") {
-		fmt.Println("Creating metadata for services")
-
-		var meta MetaYAML
-
-		err = yaml.Unmarshal(inp, &meta)
-
-		if err != nil {
-			panic(err)
-		}
-
-		// Validate input file
-		validator := validator.New()
-
-		err = validator.Struct(meta)
-
-		if err != nil {
-			panic(err)
-		}
-
-		// Generate target files
-		for _, target := range meta.Targets {
-			targetNames = append(targetNames, target.Name)
-
-			var targetTemplate = template.Must(template.New("target").Parse(targetTemplate))
-
-			// Output file is removal of suffix and addition of .target
-			outFile := target.Name + ".target"
-
-			if os.Getenv("OUTPUT_DIR") != "" {
-				outFile = os.Getenv("OUTPUT_DIR") + "/" + outFile
-			}
-
-			// Create output file
-			out, err := os.Create(outFile)
-
-			if err != nil {
-				panic(err)
-			}
-
-			err = targetTemplate.Execute(out, target)
-
-			if err != nil {
-				panic(err)
-			}
-
-			fmt.Println("Generated " + outFile)
-
-			err = out.Close()
-
-			if err != nil {
-				panic(err)
-			}
-		}
-
-		return
-	}
-
 	// Parse input file
 	var tmpl TemplateYaml
 
@@ -198,6 +204,10 @@ func gen(inpFile string) {
 
 	if strings.Contains(tmpl.Target, ".") {
 		panic("Target cannot contain a period (.)")
+	}
+
+	if !slices.Contains(targetNames, tmpl.Target) {
+		panic("Target " + tmpl.Target + " does not exist")
 	}
 
 	if strings.Contains(tmpl.After, ".") {
